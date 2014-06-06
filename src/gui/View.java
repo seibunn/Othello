@@ -1,0 +1,125 @@
+package gui;
+
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+
+//import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+
+import core.Board;
+import core.BoardState;
+import core.StateObserver;
+
+public class View implements StateObserver {
+	
+	private JButton[][] button = new JButton[8][8];
+//	private Icon whiteIcon = new ImageIcon("white.gif");
+//	private Icon blackIcon = new ImageIcon("black.gif");
+	private JFrame frame;
+	
+	public View() {
+
+		frame = new JFrame("Othello");
+			
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setPreferredSize(new Dimension(600, 600));
+
+		addComponentsToPane(frame);
+	    createMenuBar(frame);
+	    
+	    frame.pack();
+	    //Display the window.
+	    frame.setVisible(true);
+	}
+	
+	private void createMenuBar(Container contentPane) {
+
+	    JMenuBar menuBar = new JMenuBar();
+	    
+	    //Build the first menu.
+	    JMenu menu = new JMenu("File");
+	    menu.setMnemonic(KeyEvent.VK_F);
+	    menu.getAccessibleContext().setAccessibleDescription(
+	            "The only menu in this program that has menu items");
+	    
+	    //New
+	    JMenuItem menuNew = new JMenuItem("New",
+		                KeyEvent.VK_T);
+	    menuNew.setAccelerator(KeyStroke.getKeyStroke(
+				KeyEvent.VK_1, ActionEvent.ALT_MASK));
+	    menuNew.getAccessibleContext().setAccessibleDescription(
+				"This doesn't really do anything");
+		menu.add(menuNew);
+		
+		//Save
+		JMenuItem menuSave = new JMenuItem("Save game");
+		menu.add(menuSave);
+		
+		//Load
+		JMenuItem menuLoad = new JMenuItem("Load game");
+		menu.add(menuLoad);
+		
+		//Quit
+		JMenuItem menuQuit  = new JMenuItem("Quit");
+		menu.add(menuQuit);
+		
+		menuBar.add(menu);
+		frame.setJMenuBar(menuBar);
+
+	}
+	
+	private void addComponentsToPane(Container contentPane) {
+		contentPane.setLayout(new GridLayout(8,8));
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				JButton tempButton = new JButton();
+				button[i][j] = tempButton;
+				contentPane.add(tempButton);
+			}
+		}
+	}
+	
+	private void updateGui(BoardState s) {
+		
+	    for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				if(s.diskList.get(Board.index(i+1,j+1)).color() == "w") {
+					button[i][j].setIcon(new ImageIcon(this.getClass().getResource("white.gif")));
+				}
+				else if(s.diskList.get(Board.index(i+1,j+1)).color() == "b") {
+					button[i][j].setIcon(new ImageIcon(this.getClass().getResource("black.gif")));
+				}
+			
+			//TODO is this slower than using two icons to set everywhere?
+			//button[i][j].setIcon(new ImageIcon(this.getClass().getResource("white.gif")));
+			}
+	    }
+	    frame.setTitle(s.turn);
+	}
+	
+	public void addButtonListener(int i, int j, ActionListener listener) {
+		button[i][j].addActionListener(listener);
+	}
+
+	@Override
+	public void updateState(BoardState s) {
+		updateGui(s);
+		if(!s.ongoing) {
+			JOptionPane.showMessageDialog(frame, "Game ended!", 
+					"Good Job both of you", JOptionPane.PLAIN_MESSAGE);
+			
+			
+		}
+	}	
+}
